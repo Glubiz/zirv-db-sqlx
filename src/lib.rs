@@ -1,4 +1,4 @@
-mod db;
+pub mod db;
 
 /// Macro to initialize the global database pool.
 ///
@@ -8,9 +8,24 @@ mod db;
 ///
 /// # Example
 /// ```rust
+/// use zirv_db_sqlx::init_db_pool;
+/// use zirv_config::register_config;
+/// use serde::{Serialize, Deserialize};
+/// 
+/// #[derive(Serialize, Deserialize)]
+/// struct DatabaseConfig {
+///    url: String,
+///   max_connections: u32,
+/// }
+/// 
 /// # #[tokio::main]
 /// # async fn main() {
-/// init_db_pool!().await;
+/// 
+/// register_config!("database", DatabaseConfig {
+///     url: "mysql://root:password@localhost".to_owned(),
+///    max_connections: 10,
+/// });
+/// init_db_pool!();
 /// # }
 /// ```
 #[macro_export]
@@ -28,8 +43,12 @@ macro_rules! init_db_pool {
 ///
 /// # Example
 /// ```rust
-/// let pool = get_db_pool!();
-/// // Use `pool` for database operations...
+/// use zirv_db_sqlx::get_db_pool;
+/// 
+/// fn perform_db_operations() {
+///    let pool = get_db_pool!();
+///   // Use `pool` for database operations...
+/// }
 /// ```
 #[macro_export]
 macro_rules! get_db_pool {
@@ -45,6 +64,8 @@ macro_rules! get_db_pool {
 ///
 /// # Example
 /// ```rust
+/// use zirv_db_sqlx::{start_transaction, commit_transaction};
+/// 
 /// async fn perform_db_operations() -> Result<(), sqlx::Error> {
 ///     let mut tx = start_transaction!();
 ///     // Execute operations within the transaction...
@@ -72,7 +93,14 @@ macro_rules! start_transaction {
 ///
 /// # Example
 /// ```rust
-/// commit_transaction!(tx);
+/// use zirv_db_sqlx::{commit_transaction, start_transaction};
+/// 
+/// async fn perform_db_operations() -> Result<(), sqlx::Error> {
+///    let mut tx = start_transaction!();
+///    // Execute operations within the transaction...
+///    commit_transaction!(tx);
+///    Ok(())
+/// }
 /// ```
 #[macro_export]
 macro_rules! commit_transaction {
@@ -94,7 +122,14 @@ macro_rules! commit_transaction {
 ///
 /// # Example
 /// ```rust
-/// rollback_transaction!(tx);
+/// use zirv_db_sqlx::{rollback_transaction, start_transaction};
+/// 
+/// async fn perform_db_operations() -> Result<(), sqlx::Error> {
+///    let mut tx = start_transaction!();
+///    // Execute operations within the transaction...
+///    rollback_transaction!(tx);
+///    Ok(())
+/// }
 /// ```
 #[macro_export]
 macro_rules! rollback_transaction {
