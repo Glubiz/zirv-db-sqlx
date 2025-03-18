@@ -16,14 +16,8 @@ static DB_POOL: OnceLock<Pool<MySql>> = OnceLock::new();
 /// - If the pool fails to be created.
 /// - If the global pool is already initialized.
 pub async fn init_db_pool() {
-    let max_database_connections: u32 = match read_config!("database.max_connections") {
-        Some(max) => max.as_u64().unwrap_or(10) as u32,
-        None => 10,
-    };
-    let database_url = match read_config!("database.url") {
-        Some(url) => url.as_str().unwrap().to_owned(),
-        None => panic!("No database URL provided in config!"),
-    };
+    let max_database_connections: u32 = read_config!("database.max_connections", u32).unwrap_or(10);
+    let database_url = read_config!("database.url", String).unwrap();
 
     let pool = MySqlPoolOptions::new()
         .max_connections(max_database_connections)
