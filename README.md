@@ -43,21 +43,32 @@ cargo add zirv-db-sqlx
 
 ```rust
 // Import the macros
+use zirv_config::register_config;
 use zirv_db_sqlx::{init_db_pool, get_db_pool, start_transaction, commit_transaction, rollback_transaction};
 
-// Initialize the database pool (usually done at application startup)
+// Define a configuration struct with default values
+#[derive(Default)]
+struct DatabaseConfig {
+    url: String,
+    max_connections: u32,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    init_db_pool!("DATABASE_URL", 5).await?;
+    // Register the database configuration
+    register_config!("database", DatabaseConfig {
+        url: "mysql://user:password@localhost/db_name".to_string(),
+        max_connections: 5,
+    });
 
-    // Retrieve the database pool
-    let pool = get_db_pool!();
+    // Initialize the database pool (usually done at application startup)
+    init_db_pool!();
 
     // Start a transaction
     let mut transaction = start_transaction!()?;
 
     // Perform some database operations here
-    // Example: sqlx::query!("INSERT INTO users (name) VALUES ($1)", "John Doe").execute(&mut transaction).await?;
+    // Example: sqlx::query!("INSERT INTO users (name) VALUES (?)", "John Doe").execute(&mut transaction).await?;
 
     // Commit the transaction
     commit_transaction!(transaction)?;
@@ -70,22 +81,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use zirv_db_sqlx::{start_transaction, commit_transaction, rollback_transaction};
-use sqlx::PgPool;
+use sqlx::MySqlPool;
 
-async fn perform_db_operations(pool: &PgPool) -> Result<(), sqlx::Error> {
-    let mut transaction = start_transaction!()?;
+async fn perform_db_operations() -> Result<(), sqlx::Error> {
+    let mut tx = start_transaction!();
 
-    if let Err(e) = sqlx::query!("INSERT INTO users (name) VALUES ($1)", "Jane Doe")
-        .execute(&mut transaction)
+    if let Err(e) = sqlx::query!("INSERT INTO users (name) VALUES (?)", "Jane Doe")
+        .execute(&mut **tx)
         .await
     {
         // Rollback the transaction on error
-        rollback_transaction!(transaction)?;
+        rollback_transaction!(tx)?;
         return Err(e);
     }
 
     // Commit the transaction if everything succeeds
-    commit_transaction!(transaction)?;
+    commit_transaction!(tx)?;
     Ok(())
 }
 ```

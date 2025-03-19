@@ -1963,9 +1963,9 @@ dependencies = [
 
 [[package]]
 name = "zirv-config"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46b72786932e343d4fd09617241e5fadc0b20cbc0b40a6e6ed0b50d3875d291e"
+checksum = "91ebbf7682417f57aab5a0d25e33f3cf20a8b6a54adaf03d6f6895cc9c824262"
 dependencies = [
  "serde",
  "serde_json",
@@ -1973,7 +1973,7 @@ dependencies = [
 
 [[package]]
 name = "zirv-db-sqlx"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "serde",
  "serde_json",
